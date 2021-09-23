@@ -9,6 +9,7 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.specialized.BlockBlobClient;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.security.Principal;
 import java.time.ZoneOffset;
 
@@ -30,6 +33,7 @@ public class UploadFileController {
                        @PathVariable("fileName") String fileName,
                        BearerTokenAuthentication principal,
                        @RegisteredOAuth2AuthorizedClient("storage") OAuth2AuthorizedClient client) {
+        System.out.println("\n" + client.getAccessToken().getTokenValue() + "\n");
 
         TokenCredential tokenCredential = request -> Mono.just(new AccessToken(
                     client.getAccessToken().getTokenValue(),
@@ -41,9 +45,20 @@ public class UploadFileController {
                 .endpoint("https://msaldemostorageaccount.blob.core.windows.net")
                 .buildClient();
 
-        BlobContainerClient containerClient = blobServiceClient.createBlobContainer(
-                principal.getTokenAttributes().get("upn").toString().replaceAll("[^A-Za-z0-9\\-]", "-"));
-        BlobClient blobClient = containerClient.getBlobClient(fileName);
-        blobClient.upload(BinaryData.fromString(content));
+        String containerName = principal.getTokenAttributes().get("upn").toString().replaceAll("[^A-Za-z0-9\\-]", "-");
+
+
+        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
+        if (!containerClient.exists()) containerClient.create();
+
+        BlockBlobClient blockBlobClient = containerClient.getBlobClient(fileName).getBlockBlobClient();
+
+        if (blockBlobClient.exists()) blockBlobClient.delete();
+
+        try (ByteArrayInputStream dataStream = new ByteArrayInputStream(content.getBytes())) {
+            blockBlobClient.upload(dataStream, content.length());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
