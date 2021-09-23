@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +25,7 @@ import java.time.ZoneOffset;
 public class UploadFileController {
     @PutMapping("/upload/{fileName}")
     public void upload(@RequestBody String content,
-                       String fileName,
+                       @PathVariable("fileName") String fileName,
                        @AuthenticationPrincipal OidcUser principal,
                        @RegisteredOAuth2AuthorizedClient("storage") OAuth2AuthorizedClient client) {
 
@@ -32,7 +33,12 @@ public class UploadFileController {
                     client.getAccessToken().getTokenValue(),
                     client.getAccessToken().getExpiresAt().atOffset(ZoneOffset.UTC))
         );
-        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().credential(tokenCredential).buildClient();
+
+        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
+                .credential(tokenCredential)
+                .endpoint("https://mattcstorage2.blob.core.windows.net")
+                .buildClient();
+
         BlobContainerClient containerClient = blobServiceClient.createBlobContainer(principal.getEmail());
         BlobClient blobClient = containerClient.getBlobClient(fileName);
         blobClient.upload(BinaryData.fromString(content));
