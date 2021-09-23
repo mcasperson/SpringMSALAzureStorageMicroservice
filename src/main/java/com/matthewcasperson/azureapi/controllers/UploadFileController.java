@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import javax.persistence.Access;
 import java.time.ZoneOffset;
 
 @RestController
@@ -29,15 +28,10 @@ public class UploadFileController {
                        @AuthenticationPrincipal OidcUser principal,
                        @RegisteredOAuth2AuthorizedClient("storage") OAuth2AuthorizedClient client) {
 
-        TokenCredential tokenCredential = new TokenCredential() {
-            @Override
-            public Mono<AccessToken> getToken(TokenRequestContext request) {
-                return Mono.just(new AccessToken(
-                            client.getAccessToken().getTokenValue(),
-                            client.getAccessToken().getExpiresAt().atOffset(ZoneOffset.UTC))
-                );
-            }
-        };
+        TokenCredential tokenCredential = request -> Mono.just(new AccessToken(
+                    client.getAccessToken().getTokenValue(),
+                    client.getAccessToken().getExpiresAt().atOffset(ZoneOffset.UTC))
+        );
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().credential(tokenCredential).buildClient();
         BlobContainerClient containerClient = blobServiceClient.createBlobContainer(principal.getEmail());
         BlobClient blobClient = containerClient.getBlobClient(fileName);
