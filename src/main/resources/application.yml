@@ -1,0 +1,17 @@
+server:
+  port: 8082
+azure:
+  activedirectory:
+    client-id: ${CLIENT_ID}
+    client-secret: ${CLIENT_SECRET}
+    app-id-uri: ${API_URL}
+    tenant-id: ${TENANT_ID}
+    authorization-clients:
+      storage:
+        scopes:
+          - https://storage.azure.com/user_impersonation
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
