@@ -2,18 +2,12 @@ package com.matthewcasperson.azureapi.controllers;
 
 import com.azure.core.credential.AccessToken;
 import com.azure.core.credential.TokenCredential;
-import com.azure.core.credential.TokenRequestContext;
-import com.azure.core.util.BinaryData;
-import com.azure.identity.AuthorizationCodeCredential;
-import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.specialized.BlockBlobClient;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,7 +17,6 @@ import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.Principal;
 import java.time.ZoneOffset;
 
 @RestController
@@ -46,7 +39,6 @@ public class UploadFileController {
                 .buildClient();
 
         String containerName = principal.getTokenAttributes().get("upn").toString().replaceAll("[^A-Za-z0-9\\-]", "-");
-
 
         BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
         if (!containerClient.exists()) containerClient.create();
