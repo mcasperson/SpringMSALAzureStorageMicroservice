@@ -8,6 +8,7 @@ $env:API_URL_ID="Application API URI"
 $env:DB_NAME="The name of the database"
 $env:DB_USERNAME="The database username"
 $env:DB_PASSWORD="The database password"
+$env:STORAGE_ACCOUNT_NAME="The storage account name" 
 
 .\mvnw spring-boot:run
 ```
@@ -23,6 +24,7 @@ export API_URL_ID="Application API URI"
 export DB_NAME="The name of the database"
 export DB_USERNAME="The database username"
 export DB_PASSWORD="The database password"
+export STORAGE_ACCOUNT_NAME="The storage account name" 
 
 ./mvnw spring-boot:run 
 ```
