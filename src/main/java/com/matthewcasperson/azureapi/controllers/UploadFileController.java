@@ -45,7 +45,7 @@ public class UploadFileController {
     private void uploadFile(OAuth2AuthorizedClient client, String container, String fileName, String content) {
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .credential(createTokenCredential(client))
-                .endpoint("https://msaldemostorageaccount.blob.core.windows.net")
+                .endpoint("https://" + System.getenv("STORAGE_ACCOUNT_NAME") + ".blob.core.windows.net")
                 .buildClient();
 
         BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(container);
