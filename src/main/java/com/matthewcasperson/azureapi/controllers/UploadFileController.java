@@ -28,19 +28,16 @@ public class UploadFileController {
                        @RegisteredOAuth2AuthorizedClient("storage") OAuth2AuthorizedClient client) {
         System.out.println("\n" + client.getAccessToken().getTokenValue() + "\n");
 
-        TokenCredential tokenCredential = request -> Mono.just(new AccessToken(
-                    client.getAccessToken().getTokenValue(),
-                    client.getAccessToken().getExpiresAt().atOffset(ZoneOffset.UTC))
-        );
+        uploadFile(client, generateContainerName(principal), fileName, content);
+    }
 
+    void uploadFile(OAuth2AuthorizedClient client, String container, String fileName, String content) {
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-                .credential(tokenCredential)
+                .credential(createTokenCredential(client))
                 .endpoint("https://msaldemostorageaccount.blob.core.windows.net")
                 .buildClient();
 
-        String containerName = principal.getTokenAttributes().get("upn").toString().replaceAll("[^A-Za-z0-9\\-]", "-");
-
-        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
+        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(container);
         if (!containerClient.exists()) containerClient.create();
 
         BlockBlobClient blockBlobClient = containerClient.getBlobClient(fileName).getBlockBlobClient();
@@ -52,5 +49,15 @@ public class UploadFileController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    TokenCredential createTokenCredential(OAuth2AuthorizedClient client) {
+        return request -> Mono.just(new AccessToken(
+                client.getAccessToken().getTokenValue(),
+                client.getAccessToken().getExpiresAt().atOffset(ZoneOffset.UTC)));
+    }
+
+    String generateContainerName(BearerTokenAuthentication principal) {
+        return principal.getTokenAttributes().get("upn").toString().replaceAll("[^A-Za-z0-9\\-]", "-");
     }
 }
