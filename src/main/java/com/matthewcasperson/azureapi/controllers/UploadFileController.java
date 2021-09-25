@@ -6,6 +6,9 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.specialized.BlockBlobClient;
+import com.matthewcasperson.azureapi.model.Audit;
+import com.matthewcasperson.azureapi.repository.AuditRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
@@ -21,6 +24,9 @@ import java.time.ZoneOffset;
 
 @RestController
 public class UploadFileController {
+    @Autowired
+    AuditRepository auditRepository;
+
     @PutMapping("/upload/{fileName}")
     public void upload(@RequestBody String content,
                        @PathVariable("fileName") String fileName,
@@ -29,6 +35,7 @@ public class UploadFileController {
         System.out.println("\n" + client.getAccessToken().getTokenValue() + "\n");
 
         uploadFile(client, generateContainerName(principal), fileName, content);
+        auditRepository.saveAndFlush(new Audit("Uploaded file " + fileName + "for user " + getPrincipalEmail(principal)));
     }
 
     private void uploadFile(OAuth2AuthorizedClient client, String container, String fileName, String content) {
@@ -58,6 +65,10 @@ public class UploadFileController {
     }
 
     private String generateContainerName(BearerTokenAuthentication principal) {
-        return principal.getTokenAttributes().get("upn").toString().replaceAll("[^A-Za-z0-9\\-]", "-");
+        return getPrincipalEmail(principal).replaceAll("[^A-Za-z0-9\\-]", "-");
+    }
+
+    private String getPrincipalEmail(BearerTokenAuthentication principal) {
+        return principal.getTokenAttributes().get("upn").toString();
     }
 }
