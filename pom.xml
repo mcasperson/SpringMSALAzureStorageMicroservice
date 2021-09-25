@@ -14,7 +14,7 @@
 	<name>azureapi</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>16</java.version>
+		<java.version>17</java.version>
 		<azure.version>3.6.1</azure.version>
 	</properties>
 	<dependencies>
