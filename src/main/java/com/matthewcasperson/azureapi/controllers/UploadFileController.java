@@ -34,8 +34,12 @@ public class UploadFileController {
                        @RegisteredOAuth2AuthorizedClient("storage") OAuth2AuthorizedClient client) {
         System.out.println("\n" + client.getAccessToken().getTokenValue() + "\n");
 
-        uploadFile(client, generateContainerName(principal), fileName, content);
-        auditRepository.saveAndFlush(new Audit("Uploaded file " + fileName + "for user " + getPrincipalEmail(principal)));
+        try {
+            uploadFile(client, generateContainerName(principal), fileName, content);
+            auditRepository.saveAndFlush(new Audit("Uploaded file " + fileName + " for user " + getPrincipalEmail(principal)));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void uploadFile(OAuth2AuthorizedClient client, String container, String fileName, String content) {

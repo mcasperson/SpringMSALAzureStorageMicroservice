@@ -11,6 +11,8 @@ azure:
         scopes:
           - https://storage.azure.com/user_impersonation
 spring:
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
   datasource:
     url: jdbc:mysql://mattcdb.mysql.database.azure.com:3306/springdemo?useSSL=true&requireSSL=false
     username: ${DB_USERNAME}
