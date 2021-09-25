@@ -31,7 +31,7 @@ public class UploadFileController {
         uploadFile(client, generateContainerName(principal), fileName, content);
     }
 
-    void uploadFile(OAuth2AuthorizedClient client, String container, String fileName, String content) {
+    private void uploadFile(OAuth2AuthorizedClient client, String container, String fileName, String content) {
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .credential(createTokenCredential(client))
                 .endpoint("https://msaldemostorageaccount.blob.core.windows.net")
@@ -51,13 +51,13 @@ public class UploadFileController {
         }
     }
 
-    TokenCredential createTokenCredential(OAuth2AuthorizedClient client) {
+    private TokenCredential createTokenCredential(OAuth2AuthorizedClient client) {
         return request -> Mono.just(new AccessToken(
                 client.getAccessToken().getTokenValue(),
                 client.getAccessToken().getExpiresAt().atOffset(ZoneOffset.UTC)));
     }
 
-    String generateContainerName(BearerTokenAuthentication principal) {
+    private String generateContainerName(BearerTokenAuthentication principal) {
         return principal.getTokenAttributes().get("upn").toString().replaceAll("[^A-Za-z0-9\\-]", "-");
     }
 }
